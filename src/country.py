@@ -2,6 +2,7 @@
 Module for the country resource
 """
 import json
+from datetime import datetime, timedelta
 
 import httpx
 from fastapi import APIRouter, Response
@@ -11,6 +12,7 @@ router = APIRouter(prefix="/country", tags=["country"],
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
 openweathermap_url = "https://api.openweathermap.org/data/2.5/forecast"
+quickchart_url = "https://quickchart.io/chart"
 api_key = "2272c802c8593cfe75843f203090680f"
 
 
@@ -93,25 +95,62 @@ async def get_temperature(country_name: str, days: int = 1):
             country = response.json()[0]
             latitude = country["capitalInfo"]["latlng"][0]
             longitude = country["capitalInfo"]["latlng"][1]
-
-            # Calculate the number of 3-hour intervals
-            hours = days * 8 if days <= 5 else 0
-            url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
-                   f"units=metric&appid={api_key}")
-            # Get the forecast
-            response = await client.get(url)
-            if response.status_code != 200:
-                return Response(status_code=response.status_code,
-                                content=response.content)
-            try:
-                temperature = [forecast["main"]["temp"] for forecast in
-                               response.json()["list"]]
-                return Response(status_code=response.status_code,
-                                content=json.dumps(temperature))
-            except KeyError:
-                return Response(status_code=500, content="Error parsing the response")
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
+
+        # Calculate the number of 3-hour intervals
+        hours = days * 8 if days <= 5 else 0
+        url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
+               f"units=metric&appid={api_key}")
+        # Get the forecast
+        response = await client.get(url)
+        if response.status_code != 200:
+            return Response(status_code=response.status_code,
+                            content=response.content)
+        try:
+            temperature = [forecast["main"]["temp"] for forecast in
+                           response.json()["list"]]
+        except KeyError:
+            return Response(status_code=500, content="Error parsing the response")
+
+        # Create the chart
+        chart_param = {'type': 'line',
+                       'data': {'labels': translate_hours_to_days(days),
+                                'datasets': [{'label': 'Temperature',
+                                              'data': temperature}]}}
+        params = {
+            "version": "2",
+            "backgroundColor": "transparent",
+            "chart": chart_param
+        }
+
+        response = await client.post(quickchart_url, json=params)
+        if response.status_code != 200:
+            return Response(status_code=response.status_code,
+                            content=response.content)
+        else:
+            return Response(status_code=response.status_code,
+                            content=response.content,
+                            media_type="image/png")
+
+
+def translate_hours_to_days(days: int):
+    """
+    Starting from the current time, it will return the hours of the next days in
+    3-hour intervals.
+    :param days: The number of days.
+    :return: A list with the hours.
+    """
+    time = datetime.now()
+    hours = []
+    # Get the hours of the next days from the current time
+    # Also add the date to the hours
+    for _ in range(days):
+        for _ in range(8):
+            time += timedelta(hours=3)
+            hours.append(time.strftime("%d-%m %H:%M"))
+
+    return hours
 
 
 @router.get("/{country_name}/temperature")
@@ -133,19 +172,19 @@ async def get_temperature(country_name: str):
             country = response.json()[0]
             latitude = country["capitalInfo"]["latlng"][0]
             longitude = country["capitalInfo"]["latlng"][1]
+        except KeyError:
+            return Response(status_code=500, content="Error parsing the response")
 
-            url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
-                   f"&cnt=1&appid={api_key}")
-            # Get the forecast
-            response = await client.get(url)
-            if response.status_code != 200:
-                return Response(status_code=response.status_code,
-                                content=response.content)
-            try:
-                temperature = response.json()["list"][0]["main"]["temp"]
-                return Response(status_code=response.status_code,
-                                content=json.dumps(temperature))
-            except KeyError:
-                return Response(status_code=500, content="Error parsing the response")
+        url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
+               f"&cnt=1&appid={api_key}")
+        # Get the forecast
+        response = await client.get(url)
+        if response.status_code != 200:
+            return Response(status_code=response.status_code,
+                            content=response.content)
+        try:
+            temperature = response.json()["list"][0]["main"]["temp"]
+            return Response(status_code=response.status_code,
+                            content=json.dumps(temperature))
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
