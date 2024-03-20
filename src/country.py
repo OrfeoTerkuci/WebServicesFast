@@ -1,13 +1,12 @@
 """
 Module for the country resource
 """
-import json
 from datetime import datetime, timedelta
 
 import httpx
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Response, Path, Query
 
-router = APIRouter(prefix="/country", tags=["country"],
+router = APIRouter(prefix="/countries", tags=["countries"],
                    responses={404: {"description": "Not found"}})
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
@@ -16,8 +15,18 @@ quickchart_url = "https://quickchart.io/chart"
 api_key = "2272c802c8593cfe75843f203090680f"
 
 
-@router.get("")
-async def get_countries(continent: str = None):
+@router.get("",
+            responses={500: {"description": "Internal server error",
+                             "content": {"application/json": {}}},
+                       200: {
+                           "description": "A list with the country names of the "
+                                          "continent, or all the countries if no "
+                                          "continent is provided.",
+                           "content": {"application/json": {}}}})
+async def get_countries(continent: str = Query(
+    None, description="The continent to filter the countries.",
+    example="Europe"
+)):
     """
     This path will return a list with all the countries.
     :param continent: The continent to filter the countries.
@@ -31,17 +40,24 @@ async def get_countries(continent: str = None):
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         if response.status_code != 200:
-            return Response(status_code=response.status_code, content=response.content)
+            return Response(status_code=500,
+                            content="Error getting the countries")
         try:
             countries = [country["name"]["common"] for country in response.json()]
-            return Response(status_code=response.status_code,
-                            content=json.dumps(countries))
+            return {"countries": countries}
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
 
 
-@router.get("/{country_name}")
-async def get_country(country_name: str):
+@router.get("/{country_name}",
+            responses={500: {"description": "Internal server error",
+                             "content": {"application/json": {}}},
+                       200: {"description": "The country information",
+                             "content": {"application/json": {}}}})
+async def get_country(country_name: str = Path(...,
+                                               description="The name of the country.",
+                                               example="Spain")
+                      ):
     """
     This path will return the information of a country.
     This information includes:
@@ -56,23 +72,31 @@ async def get_country(country_name: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         if response.status_code != 200:
-            return Response(status_code=response.status_code, content=response.content)
+            return Response(status_code=500,
+                            content="Error getting the country information")
         try:
             country = response.json()[0]
-            return Response(status_code=response.status_code,
-                            content=json.dumps({"capital": country["capital"],
-                                                "latitude":
-                                                    country["capitalInfo"]["latlng"][0],
-                                                "longitude":
-                                                    country["capitalInfo"]["latlng"][1],
-                                                "population": country["population"],
-                                                "area": country["area"]}))
+            return {"capital": country["capital"],
+                    "latitude":
+                        country["capitalInfo"]["latlng"][0],
+                    "longitude":
+                        country["capitalInfo"]["latlng"][1],
+                    "population": country["population"],
+                    "area": country["area"]}
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
 
 
-@router.get("/{country_name}/temperature")
-async def get_temperature(country_name: str):
+@router.get("/{country_name}/temperature",
+            responses={500: {"description": "Internal server error",
+                             "content": {"application/json": {}}},
+                       200: {"description": "The temperature",
+                             "content": {"application/json": {}}}},
+            response_model=None)
+async def get_temperature(
+        country_name: str = Path(...,
+                                 description="The name of the country.",
+                                 example="Belgium")):
     """
     This path will return the temperature of a country.
     :param country_name: The name of the country.
@@ -86,8 +110,8 @@ async def get_temperature(country_name: str):
             # Get the country information
             response = await client.get(url)
             if response.status_code != 200:
-                return Response(status_code=response.status_code,
-                                content=response.content)
+                return Response(status_code=500,
+                                content="Error getting the country information")
 
             country = response.json()[0]
             latitude = country["capitalInfo"]["latlng"][0]
@@ -98,22 +122,35 @@ async def get_temperature(country_name: str):
             # Get the forecast
             response = await client.get(url)
             if response.status_code != 200:
-                return Response(status_code=response.status_code,
-                                content=response.content)
+                return Response(status_code=500,
+                                content="Error getting the temperature forecast")
             temperature = response.json()["list"][0]["main"]["temp"]
-            return Response(status_code=response.status_code,
-                            content=json.dumps(temperature))
+            return {"temperature": temperature}
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
 
 
-@router.get("/{country_name}/forecast/{days}")
-async def get_temperature(country_name: str, days: int = 1):
+@router.get("/{country_name}/forecast/{days}",
+            responses={400: {"description": "Bad request",
+                             "content": {"application/json": {}}},
+                       500: {"description": "Internal server error",
+                             "content": {"application/json": {}}},
+                       200: {"description": "The forecast chart",
+                             "content": {"image/png": {}}}}
+            )
+async def get_forecast(
+        country_name: str = Path(..., description="The name of the country.",
+                                 example="Belgium"),
+        days: int = Path(...,
+                         description="The number of days to get the "
+                                     "forecast. Must be between 1 "
+                                     "and 5.",
+                         ge=1, le=5)) -> Response:
     """
     This path will return the temperature of a country.
     :param days: The number of days to get the forecast. Maximum 5 days.
     :param country_name: The name of the country.
-    :return:
+    :return: The temperature forecast chart for the given country.
     """
     # Get the country information (latitude and longitude of the capital)
     url = f"{REST_COUNTRIES_URL}/name/{country_name}"
@@ -127,7 +164,7 @@ async def get_temperature(country_name: str, days: int = 1):
             # Get the country information
             response = await client.get(url)
             if response.status_code != 200:
-                return Response(status_code=response.status_code,
+                return Response(status_code=500,
                                 content=response.content)
 
             country = response.json()[0]
@@ -141,7 +178,7 @@ async def get_temperature(country_name: str, days: int = 1):
             # Get the forecast
             response = await client.get(url)
             if response.status_code != 200:
-                return Response(status_code=response.status_code,
+                return Response(status_code=500,
                                 content=response.content)
 
             temperature = [forecast["main"]["temp"] for forecast in
@@ -152,7 +189,7 @@ async def get_temperature(country_name: str, days: int = 1):
         return await get_chart(client, days, temperature)
 
 
-async def get_chart(client, days, temperature):
+async def get_chart(client, days, temperature) -> Response:
     """
     This function will create a chart with the temperature forecast.
     :param client: The HTTP client.
