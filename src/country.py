@@ -71,6 +71,42 @@ async def get_country(country_name: str):
             return Response(status_code=500, content="Error parsing the response")
 
 
+@router.get("/{country_name}/temperature")
+async def get_temperature(country_name: str):
+    """
+    This path will return the temperature of a country.
+    :param country_name: The name of the country.
+    :return:
+    """
+    # Get the country information (latitude and longitude of the capital)
+    url = f"{REST_COUNTRIES_URL}/name/{country_name}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            # Get the country information
+            response = await client.get(url)
+            if response.status_code != 200:
+                return Response(status_code=response.status_code,
+                                content=response.content)
+
+            country = response.json()[0]
+            latitude = country["capitalInfo"]["latlng"][0]
+            longitude = country["capitalInfo"]["latlng"][1]
+
+            url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
+                   f"&cnt=1&appid={api_key}")
+            # Get the forecast
+            response = await client.get(url)
+            if response.status_code != 200:
+                return Response(status_code=response.status_code,
+                                content=response.content)
+            temperature = response.json()["list"][0]["main"]["temp"]
+            return Response(status_code=response.status_code,
+                            content=json.dumps(temperature))
+        except KeyError:
+            return Response(status_code=500, content="Error parsing the response")
+
+
 @router.get("/{country_name}/forecast/{days}")
 async def get_temperature(country_name: str, days: int = 1):
     """
@@ -87,51 +123,61 @@ async def get_temperature(country_name: str, days: int = 1):
                         content="The number of days must be between 1 and 5")
 
     async with httpx.AsyncClient() as client:
-        # Get the country information
-        response = await client.get(url)
-        if response.status_code != 200:
-            return Response(status_code=response.status_code, content=response.content)
         try:
+            # Get the country information
+            response = await client.get(url)
+            if response.status_code != 200:
+                return Response(status_code=response.status_code,
+                                content=response.content)
+
             country = response.json()[0]
             latitude = country["capitalInfo"]["latlng"][0]
             longitude = country["capitalInfo"]["latlng"][1]
-        except KeyError:
-            return Response(status_code=500, content="Error parsing the response")
 
-        # Calculate the number of 3-hour intervals
-        hours = days * 8 if days <= 5 else 0
-        url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
-               f"units=metric&appid={api_key}")
-        # Get the forecast
-        response = await client.get(url)
-        if response.status_code != 200:
-            return Response(status_code=response.status_code,
-                            content=response.content)
-        try:
+            # Calculate the number of 3-hour intervals
+            hours = days * 8 if days <= 5 else 0
+            url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
+                   f"units=metric&appid={api_key}")
+            # Get the forecast
+            response = await client.get(url)
+            if response.status_code != 200:
+                return Response(status_code=response.status_code,
+                                content=response.content)
+
             temperature = [forecast["main"]["temp"] for forecast in
                            response.json()["list"]]
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
 
-        # Create the chart
-        chart_param = {'type': 'line',
-                       'data': {'labels': translate_hours_to_days(days),
-                                'datasets': [{'label': 'Temperature',
-                                              'data': temperature}]}}
-        params = {
-            "version": "2",
-            "backgroundColor": "transparent",
-            "chart": chart_param
-        }
+        return await get_chart(client, days, temperature)
 
-        response = await client.post(quickchart_url, json=params)
-        if response.status_code != 200:
-            return Response(status_code=response.status_code,
-                            content=response.content)
-        else:
-            return Response(status_code=response.status_code,
-                            content=response.content,
-                            media_type="image/png")
+
+async def get_chart(client, days, temperature):
+    """
+    This function will create a chart with the temperature forecast.
+    :param client: The HTTP client.
+    :param days: The number of days.
+    :param temperature: The temperature forecast.
+    :return: The chart as a response, or an error response..
+    """
+    # Create the chart
+    chart_param = {'type': 'line',
+                   'data': {'labels': translate_hours_to_days(days),
+                            'datasets': [{'label': 'Temperature',
+                                          'data': temperature}]}}
+    params = {
+        "version": "2",
+        "backgroundColor": "transparent",
+        "chart": chart_param
+    }
+    response = await client.post(quickchart_url, json=params)
+    if response.status_code != 200:
+        return Response(status_code=response.status_code,
+                        content=response.content)
+    else:
+        return Response(status_code=response.status_code,
+                        content=response.content,
+                        media_type="image/png")
 
 
 def translate_hours_to_days(days: int):
@@ -151,40 +197,3 @@ def translate_hours_to_days(days: int):
             hours.append(time.strftime("%d-%m %H:%M"))
 
     return hours
-
-
-@router.get("/{country_name}/temperature")
-async def get_temperature(country_name: str):
-    """
-    This path will return the temperature of a country.
-    :param country_name: The name of the country.
-    :return:
-    """
-    # Get the country information (latitude and longitude of the capital)
-    url = f"{REST_COUNTRIES_URL}/name/{country_name}"
-
-    async with httpx.AsyncClient() as client:
-        # Get the country information
-        response = await client.get(url)
-        if response.status_code != 200:
-            return Response(status_code=response.status_code, content=response.content)
-        try:
-            country = response.json()[0]
-            latitude = country["capitalInfo"]["latlng"][0]
-            longitude = country["capitalInfo"]["latlng"][1]
-        except KeyError:
-            return Response(status_code=500, content="Error parsing the response")
-
-        url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
-               f"&cnt=1&appid={api_key}")
-        # Get the forecast
-        response = await client.get(url)
-        if response.status_code != 200:
-            return Response(status_code=response.status_code,
-                            content=response.content)
-        try:
-            temperature = response.json()["list"][0]["main"]["temp"]
-            return Response(status_code=response.status_code,
-                            content=json.dumps(temperature))
-        except KeyError:
-            return Response(status_code=500, content="Error parsing the response")
