@@ -168,6 +168,8 @@ async def get_forecast(
                                 content=response.content)
 
             country = response.json()[0]
+
+            # Get the latitude and longitude of the capital
             latitude = country["capitalInfo"]["latlng"][0]
             longitude = country["capitalInfo"]["latlng"][1]
 
@@ -186,22 +188,67 @@ async def get_forecast(
         except KeyError:
             return Response(status_code=500, content="Error parsing the response")
 
-        return await get_chart(client, days, temperature)
+        # Get the exact country name (for the chart title)
+
+        country_name = country["name"]["common"]
+
+        return await get_chart(client, days, temperature, country_name)
 
 
-async def get_chart(client, days, temperature) -> Response:
+async def get_chart(client, days, temperature, country_name: str) -> Response:
     """
     This function will create a chart with the temperature forecast.
+
     :param client: The HTTP client.
     :param days: The number of days.
     :param temperature: The temperature forecast.
+    :param country_name: The name of the country.
+
     :return: The chart as a response, or an error response..
     """
+
+    chart_options = {
+        'scales': {
+            'xAxes': [{
+                'scaleLabel': {
+                    'display': True,
+                    'labelString': 'Date'
+                }
+            }],
+            'yAxes': [{
+                'scaleLabel': {
+                    'display': True,
+                    'labelString': 'Temperature'
+                },
+                "major": {
+                    "enabled": True
+                }
+            }],
+            "Date": {"type": "category", "position": "bottom"},
+            "Temperature": {"type": "linear", "position": "left"}
+        }
+    }
+
+    # Get custom emojis for the chart, based on the average temperature
+    if sum(temperature) / len(temperature) < 0:
+        emoji = "❄️"
+    elif sum(temperature) / len(temperature) < 10:
+        emoji = "🥶"
+    elif sum(temperature) / len(temperature) < 20:
+        emoji = "😊"
+    else:
+        emoji = "🔥"
+
     # Create the chart
     chart_param = {'type': 'line',
+                   'options': chart_options,
                    'data': {'labels': translate_hours_to_days(days),
-                            'datasets': [{'label': 'Temperature',
-                                          'data': temperature}]}}
+                            'datasets': [{
+                                'label': f'Temperature in {country_name} {emoji}',
+                                'data': temperature,
+                                'fill': False
+                            }
+                            ]}}
     params = {
         "version": "2",
         "backgroundColor": "transparent",
