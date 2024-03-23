@@ -2,10 +2,22 @@
 The main file of the FastAPI application.
 Here we connect all the paths and the logic of the API.
 """
+import argparse
+
 import uvicorn
 from fastapi import FastAPI
 
-from src import country, temperature, favourite
+from src import country, favourite
+
+# Create a parser
+parser = argparse.ArgumentParser(description="Run the FastAPI application.")
+# Add the API key argument
+parser.add_argument('--api_key', type=str, required=True,
+                    help='The API key for the OpenWeatherMap API.')
+# Parse the arguments
+args = parser.parse_args()
+
+country.api_key = args.api_key
 
 app = FastAPI(root_path="/api",
               title="Countries API",
@@ -26,4 +38,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="localhost", port=8000)
+    uvicorn.run("app:app", host="localhost", port=8000, reload=True)

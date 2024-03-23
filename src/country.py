@@ -12,7 +12,7 @@ router = APIRouter(prefix="/countries", tags=["countries"],
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
 openweathermap_url = "https://api.openweathermap.org/data/2.5/forecast"
 quickchart_url = "https://quickchart.io/chart"
-api_key = "2272c802c8593cfe75843f203090680f"
+api_key = ""
 
 
 @router.get("",
