@@ -2,6 +2,6 @@
 API routes for the countries API.
 """
 
-from . import country, temperature, favourite
+from . import country, favourite
 
-__all__ = ["country", "temperature", "favourite"]
+__all__ = ["country", "favourite"]

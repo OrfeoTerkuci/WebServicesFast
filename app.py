@@ -17,6 +17,9 @@ parser.add_argument('--api_key', type=str, required=True,
 # Parse the arguments
 args = parser.parse_args()
 
+if not args.api_key:
+    raise ValueError("The API key is required.")
+
 country.api_key = args.api_key
 
 app = FastAPI(root_path="/api",
