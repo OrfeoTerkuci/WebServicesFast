@@ -8,7 +8,10 @@ import httpx
 from fastapi import APIRouter, Response, Path, Query, status
 
 router = APIRouter(prefix="/countries", tags=["countries"],
-                   responses={404: {"description": "Not found"}})
+                   responses={404: {"description": "Not found",
+                                    "content": {
+                                        "plain/text": {"example": "Not found"}},
+                                    }})
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
 openweathermap_url = "https://api.openweathermap.org/data/2.5/forecast"

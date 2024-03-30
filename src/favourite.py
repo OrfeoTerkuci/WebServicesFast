@@ -15,17 +15,30 @@ favourite_countries = ["Albania"]
 
 router = APIRouter(prefix="/favourite", tags=["favourite"],
                    responses={404: {"description": "Not found",
-                                    "schema": {"type": "string"}}},
+                                    "content": {
+                                        "plain/text": {"example": "Not found"}}}},
                    )
 
 
 @router.get("",
+
             responses={200: {"description": "List of favourite countries",
                              "content":
                                  {"application/json":
                                      {"example": {
-                                         "favourite countries": ["Albania"]}}}
-                             }
+                                         "favourite countries": ["Albania"]},
+                                         "schema": {
+                                             "type": "object",
+                                             "properties": {
+                                                 "favourite countries": {
+                                                     "type": "array",
+                                                     "items": {
+                                                         "type": "string"
+                                                     }
+                                                 }
+                                             }
+
+                                         }}}}
                        })
 async def get_favourite_countries() -> Response:
     """
