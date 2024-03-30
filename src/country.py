@@ -17,7 +17,9 @@ api_key = ""
 
 
 @router.get("",
-            responses={500: {"description": "Internal server error"},
+            responses={500: {"description": "Internal server error",
+                             "content": {"plain/text": {
+                                 "example": "Error getting the countries"}}},
                        200: {
                            "description": "A list with the country names of the "
                                           "continent, or all the countries if no "
@@ -66,7 +68,9 @@ async def get_countries(continent: str = Query(
 
 
 @router.get("/{country_name}",
-            responses={500: {"description": "Internal server error"},
+            responses={500: {"description": "Internal server error",
+                             "content": {"plain/text": {
+                                 "example": "Error getting the country information"}}},
                        200: {"description": "The country information",
                              "content": {"application/json": {
                                  "example": {"capital": "Madrid",
@@ -140,8 +144,12 @@ async def get_country(country_name: str = Path(...,
 
 
 @router.get("/{country_name}/temperature",
-            responses={400: {"description": "Bad request. The API key is not set."},
-                       500: {"description": "Internal server error"},
+            responses={400: {"description": "Bad request. The API key is not set.",
+                             "content": {"plain/text": {
+                                 "example": "The API key is not set"}}},
+                       500: {"description": "Internal server error",
+                             "content": {"plain/text": {
+                                 "example": "Error getting the temperature forecast"}}},
                        200: {"description": "The temperature",
                              "content": {"application/json": {
                                  "example": {"temperature": 20},
@@ -210,8 +218,15 @@ async def get_temperature(
 
 @router.get("/{country_name}/forecast/{days}",
             responses={400: {"description": "Bad request. Unsupported number of days,"
-                                            "or the API key is not set."},
-                       500: {"description": "Internal server error"},
+                                            "or the API key is not set.",
+                             "content":
+                                 {"plain/text": {
+                                     "example": "The number of days must be "
+                                                "between 1 and 5"}}
+                             },
+                       500: {"description": "Internal server error",
+                             "content": {"plain/text": {
+                                 "example": "Error getting the forecast"}}},
                        200: {"description": "The forecast chart",
                              "content": {"image/png": {}}}}
             )
