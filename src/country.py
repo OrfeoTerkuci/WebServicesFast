@@ -19,6 +19,15 @@ quickchart_url = "https://quickchart.io/chart"
 api_key = ""
 
 
+def set_api_key(key: str) -> None:
+    """
+    Set the API key for the OpenWeatherMap API.
+    :param key: The API key.
+    """
+    global api_key
+    api_key = key
+
+
 @router.get("",
             responses={500: {"description": "Internal server error",
                              "content": {"plain/text": {
