@@ -27,7 +27,6 @@ app = FastAPI(root_path="/api",
 app.include_router(country.router)
 app.include_router(favourite.router)
 
-print("API key:", args.api_key)
 
 @app.get("/")
 async def root():
