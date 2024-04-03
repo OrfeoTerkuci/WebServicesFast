@@ -1,0 +1,619 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Countries API",
+        "description": "This is a simple API that returns a list of countries.",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "/api"
+        }
+    ],
+    "paths": {
+        "/country": {
+            "get": {
+                "tags": [
+                    "country"
+                ],
+                "summary": "Get Countries",
+                "description": "This path will return a list with all the countries.\n:param continent: The continent to filter the countries.\n:return: A list with the countries.",
+                "operationId": "get_countries_country_get",
+                "parameters": [
+                    {
+                        "name": "continent",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "The continent to filter the countries.",
+                            "title": "Continent"
+                        },
+                        "description": "The continent to filter the countries.",
+                        "example": "Europe"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list with the country names of the continent, or all the countries if no continent is provided.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "countries": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "The name of the country."
+                                            }
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "countries": [
+                                        "Spain",
+                                        "France"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Not found"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Error parsing the response"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/country/{country_name}": {
+            "get": {
+                "tags": [
+                    "country"
+                ],
+                "summary": "Get Country",
+                "description": "This path will return the information of a country.\nThis information includes:\n- Longitude and latitude of the capital.\n- Population.\n- Area.\n:param country_name: The name of the country.\n:return:",
+                "operationId": "get_country_country__country_name__get",
+                "parameters": [
+                    {
+                        "name": "country_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "The name of the country.",
+                            "title": "Country Name"
+                        },
+                        "description": "The name of the country.",
+                        "example": "Spain"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The country information",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "capital": {
+                                            "type": "string",
+                                            "description": "The capital of the country."
+                                        },
+                                        "latitude": {
+                                            "type": "number",
+                                            "description": "The latitude of the capital."
+                                        },
+                                        "longitude": {
+                                            "type": "number",
+                                            "description": "The longitude of the capital."
+                                        },
+                                        "population": {
+                                            "type": "number",
+                                            "description": "The population of the country."
+                                        },
+                                        "area": {
+                                            "type": "number",
+                                            "description": "The area of the country."
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "capital": "Madrid",
+                                    "latitude": 40.4165,
+                                    "longitude": -3.7026,
+                                    "population": 46736776,
+                                    "area": 505992.0
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Not found"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Error getting the country information"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/country/{country_name}/temperature": {
+            "get": {
+                "tags": [
+                    "country"
+                ],
+                "summary": "Get Temperature",
+                "description": "This path will return the temperature of a country.\n:param country_name: The name of the country.\n:return:",
+                "operationId": "get_temperature_country__country_name__temperature_get",
+                "parameters": [
+                    {
+                        "name": "country_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "The name of the country.",
+                            "title": "Country Name"
+                        },
+                        "description": "The name of the country.",
+                        "example": "Belgium"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The temperature",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "temperature": {
+                                            "type": "number",
+                                            "description": "The temperature in Celsius."
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "temperature": 20
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Not found"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request. The API key is not set.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "The API key is not set"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "The API key is not correct"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Error getting the country information"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/country/{country_name}/forecast/{days}": {
+            "get": {
+                "tags": [
+                    "country"
+                ],
+                "summary": "Get Forecast",
+                "description": "This path will return the temperature of a country.\n:param days: The number of days to get the forecast. Maximum 5 days.\n:param country_name: The name of the country.\n:return: The temperature forecast chart for the given country.",
+                "operationId": "get_forecast_country__country_name__forecast__days__get",
+                "parameters": [
+                    {
+                        "name": "country_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "The name of the country.",
+                            "title": "Country Name"
+                        },
+                        "description": "The name of the country.",
+                        "example": "Belgium"
+                    },
+                    {
+                        "name": "days",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 5,
+                            "minimum": 1,
+                            "description": "The number of days to get the forecast. Must be between 1 and 5.",
+                            "title": "Days"
+                        },
+                        "description": "The number of days to get the forecast. Must be between 1 and 5."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The forecast chart for the given country and days.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            },
+                            "image/png": {
+                                "schema": {
+                                    "type": "image/png",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Not found"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request. Unsupported number of days,or the API key is not set.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "The API key is not set"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Error getting the temperature forecast"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/favourite": {
+            "get": {
+                "tags": [
+                    "favourite"
+                ],
+                "summary": "Get Favourite Countries",
+                "description": "This path will return the list of favourite countries.\n\n:return: A response with the list of favourite countries.",
+                "operationId": "get_favourite_countries_favourite_get",
+                "responses": {
+                    "200": {
+                        "description": "List of favourite countries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "favourites": {
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "favourites": [
+                                        "Albania"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "favourite"
+                ],
+                "summary": "Add Favourite",
+                "description": "This path will add a country to the favourite list.\n\n:param country_name: The name of the country.\n\n:return: A response with the result of the operation.",
+                "operationId": "add_favourite_favourite_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CountryName"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Country added to the favourite list",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Albania added to the favourite list"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Country not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Country not found"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error parsing the response",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Error parsing the response"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "favourite"
+                ],
+                "summary": "Delete Favourite",
+                "description": "This path will remove a country from the favourite list.\n\n:param country_name: The name of the country.\n\n:return: A response with the result of the operation.",
+                "operationId": "delete_favourite_favourite_delete",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CountryName"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Country removed from the favourite list",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Albania removed from the favourite list"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Country not found in the favourite list",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Country not found in the favourite list"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/": {
+            "get": {
+                "summary": "Root",
+                "description": "This is the root path of the API. It returns a simple message.\n:return:",
+                "operationId": "root__get",
+                "responses": {
+                    "200": {
+                        "description": "Welcome message from the API",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Welcome to Countries API"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CountryName": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "title": "CountryName"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}
