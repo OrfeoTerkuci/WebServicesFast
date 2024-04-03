@@ -1,17 +1,23 @@
 """
 Module for the country resource
 """
+
 import json
 from datetime import datetime, timedelta
 
 import httpx
-from fastapi import APIRouter, Response, Path, Query, status
+from fastapi import APIRouter, Path, Query, Response, status
 
-router = APIRouter(prefix="/countries", tags=["countries"],
-                   responses={404: {"description": "Not found",
-                                    "content": {
-                                        "plain/text": {"example": "Not found"}},
-                                    }})
+router = APIRouter(
+    prefix="/country",
+    tags=["country"],
+    responses={
+        404: {
+            "description": "Not found",
+            "content": {"application/json": {"example": {"detail": "Not found"}}},
+        }
+    },
+)
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
 openweathermap_url = "https://api.openweathermap.org/data/2.5/forecast"
@@ -28,33 +34,47 @@ def set_api_key(key: str) -> None:
     api_key = key
 
 
-@router.get("",
-            responses={500: {"description": "Internal server error",
-                             "content": {"plain/text": {
-                                 "example": "Error getting the countries"}}},
-                       200: {
-                           "description": "A list with the country names of the "
-                                          "continent, or all the countries if no "
-                                          "continent is provided.",
-                           "content": {"application/json": {
-                               "example": {"countries": ["Spain", "France"]},
-                               "schema": {
-                                   "type": "object",
-                                   "properties": {
-                                       "countries": {
-                                           "type": "array",
-                                           "items": {
-                                               "type": "string",
-                                               "description": "The name of the country."
-                                           }
-                                       }
-                                   }
-                               }
-                           }}}})
-async def get_countries(continent: str = Query(
-    None, description="The continent to filter the countries.",
-    example="Europe"
-)) -> Response:
+@router.get(
+    "",
+    responses={
+        200: {
+            "description": "A list with the country names of the "
+            "continent, or all the countries if no "
+            "continent is provided.",
+            "content": {
+                "application/json": {
+                    "example": {"countries": ["Spain", "France"]},
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "countries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "The name of the country.",
+                                },
+                            }
+                        },
+                    },
+                }
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Error getting the countries"},
+                    "example": {"detail": "Error parsing the response"},
+                }
+            },
+        },
+    },
+)
+async def get_countries(
+    continent: str = Query(
+        None, description="The continent to filter the countries.", example="Europe"
+    )
+) -> Response:
     """
     This path will return a list with all the countries.
     :param continent: The continent to filter the countries.
@@ -68,62 +88,80 @@ async def get_countries(continent: str = Query(
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         if response.status_code != status.HTTP_200_OK:
-            return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content="Error getting the countries")
+            return Response(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content="Error getting the countries",
+            )
         try:
             countries = [country["name"]["common"] for country in response.json()]
-            return Response(status_code=status.HTTP_200_OK,
-                            content=json.dumps({"countries": countries}, indent=4))
+            return Response(
+                status_code=status.HTTP_200_OK,
+                content=json.dumps({"countries": countries}, indent=4),
+            )
         except KeyError:
-            return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content="Error parsing the response")
+            return Response(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content="Error parsing the response",
+            )
 
 
-@router.get("/{country_name}",
-            responses={500: {"description": "Internal server error",
-                             "content": {"plain/text": {
-                                 "example": "Error getting the country information"}}},
-                       200: {"description": "The country information",
-                             "content": {"application/json": {
-                                 "example": {"capital": "Madrid",
-                                             "latitude": 40.4165,
-                                             "longitude": -3.7026,
-                                             "population": 46736776,
-                                             "area": 505992.0},
-                                 "schema": {
-                                     "type": "object",
-                                     "properties": {
-                                         "capital": {
-                                             "type": "string",
-                                             "description": "The capital of "
-                                                            "the country."
-                                         },
-                                         "latitude": {
-                                             "type": "number",
-                                             "description": "The latitude of "
-                                                            "the capital."
-                                         },
-                                         "longitude": {
-                                             "type": "number",
-                                             "description": "The longitude of "
-                                                            "the capital."
-                                         },
-                                         "population": {
-                                             "type": "number",
-                                             "description": "The population of "
-                                                            "the country."
-                                         },
-                                         "area": {
-                                             "type": "number",
-                                             "description": "The area of the country."
-                                         }
-                                     }
-                                 }
-                             }}}})
-async def get_country(country_name: str = Path(...,
-                                               description="The name of the country.",
-                                               example="Spain")
-                      ) -> Response:
+@router.get(
+    "/{country_name}",
+    responses={
+        200: {
+            "description": "The country information",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "capital": "Madrid",
+                        "latitude": 40.4165,
+                        "longitude": -3.7026,
+                        "population": 46736776,
+                        "area": 505992.0,
+                    },
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "capital": {
+                                "type": "string",
+                                "description": "The capital of " "the country.",
+                            },
+                            "latitude": {
+                                "type": "number",
+                                "description": "The latitude of " "the capital.",
+                            },
+                            "longitude": {
+                                "type": "number",
+                                "description": "The longitude of " "the capital.",
+                            },
+                            "population": {
+                                "type": "number",
+                                "description": "The population of " "the country.",
+                            },
+                            "area": {
+                                "type": "number",
+                                "description": "The area of the country.",
+                            },
+                        },
+                    },
+                }
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Error getting the country information"}
+                }
+            },
+        },
+    },
+)
+async def get_country(
+    country_name: str = Path(
+        ..., description="The name of the country.", example="Spain"
+    )
+) -> Response:
     """
     This path will return the information of a country.
     This information includes:
@@ -138,49 +176,84 @@ async def get_country(country_name: str = Path(...,
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         if response.status_code != status.HTTP_200_OK:
-            return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content="Error getting the country information")
+            return Response(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content="Error getting the country information",
+            )
         try:
             country = response.json()[0]
-            return Response(status_code=status.HTTP_200_OK,
-                            content=json.dumps({"capital": country["capital"],
-                                                "latitude":
-                                                    country["capitalInfo"]["latlng"][0],
-                                                "longitude":
-                                                    country["capitalInfo"]["latlng"][1],
-                                                "population": country["population"],
-                                                "area": country["area"]}, indent=4))
+            return Response(
+                status_code=status.HTTP_200_OK,
+                content=json.dumps(
+                    {
+                        "capital": country["capital"],
+                        "latitude": country["capitalInfo"]["latlng"][0],
+                        "longitude": country["capitalInfo"]["latlng"][1],
+                        "population": country["population"],
+                        "area": country["area"],
+                    },
+                    indent=4,
+                ),
+            )
         except KeyError:
-            return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content="Error parsing the response")
+            return Response(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content="Error parsing the response",
+            )
 
 
-@router.get("/{country_name}/temperature",
-            responses={400: {"description": "Bad request. The API key is not set.",
-                             "content": {"plain/text": {
-                                 "example": "The API key is not set"}}},
-                       500: {"description": "Internal server error",
-                             "content": {"plain/text": {
-                                 "example": "Error getting the temperature forecast"}}},
-                       200: {"description": "The temperature",
-                             "content": {"application/json": {
-                                 "example": {"temperature": 20},
-                                 "schema": {
-                                     "type": "object",
-                                     "properties": {
-                                         "temperature": {
-                                             "type": "number",
-                                             "description": "The temperature "
-                                                            "in Celsius."
-                                         }
-                                     }
-                                 }
-                             }}}},
-            response_model=None)
+@router.get(
+    "/{country_name}/temperature",
+    responses={
+        200: {
+            "description": "The temperature",
+            "content": {
+                "application/json": {
+                    "example": {"temperature": 20},
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "temperature": {
+                                "type": "number",
+                                "description": "The temperature " "in Celsius.",
+                            }
+                        },
+                    },
+                }
+            },
+        },
+        400: {
+            "description": "Bad request. The API key is not set.",
+            "content": {
+                "application/json": {"example": {"detail": "The API key is not set"}}
+            },
+        },
+        401: {
+            "description": "Unauthorized",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "The API key is not correct"}
+                }
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "EError getting the temperature forecast"},
+                    "example": {"detail": "Error parsing the response"},
+                    "example": {"detail": "Error getting the country information"},
+                }
+            },
+        },
+    },
+    response_model=None,
+)
 async def get_temperature(
-        country_name: str = Path(...,
-                                 description="The name of the country.",
-                                 example="Belgium")) -> Response:
+    country_name: str = Path(
+        ..., description="The name of the country.", example="Belgium"
+    )
+) -> Response:
     """
     This path will return the temperature of a country.
     :param country_name: The name of the country.
@@ -194,8 +267,10 @@ async def get_temperature(
             # Get the country information
             response = await client.get(url)
             if response.status_code != status.HTTP_200_OK:
-                return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                content="Error getting the country information")
+                return Response(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    content="Error getting the country information",
+                )
 
             # Get the latitude and longitude of the capital
             country = response.json()[0]
@@ -204,52 +279,87 @@ async def get_temperature(
 
             # Get the forecast from the OpenWeatherMap API
             if not api_key:
-                return Response(status_code=status.HTTP_400_BAD_REQUEST,
-                                content="The API key is not set")
+                return Response(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content="The API key is not set",
+                )
 
-            url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
-                   f"&cnt=1&appid={api_key}")
+            url = (
+                f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
+                f"&cnt=1&appid={api_key}"
+            )
             # Get the forecast
             response = await client.get(url)
             if response.status_code == status.HTTP_401_UNAUTHORIZED:
-                return Response(status_code=status.HTTP_400_BAD_REQUEST,
-                                content="The API key is not correct")
+                return Response(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content="The API key is not correct",
+                )
 
             if response.status_code != status.HTTP_200_OK:
-                return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                content="Error getting the temperature forecast")
+                return Response(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    content="Error getting the temperature forecast",
+                )
 
             # Get the temperature
             temperature = response.json()["list"][0]["main"]["temp"]
-            return Response(status_code=status.HTTP_200_OK,
-                            content=json.dumps({"temperature": temperature}, indent=4))
-        except KeyError:
-            return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content="Error parsing the response")
-
-
-@router.get("/{country_name}/forecast/{days}",
-            responses={400: {"description": "Bad request. Unsupported number of days,"
-                                            "or the API key is not set.",
-                             "content":
-                                 {"plain/text": {
-                                     "example": "The number of days must be "
-                                                "between 1 and 5"}}
-                             },
-                       500: {"description": "Internal server error",
-                             "content": {"plain/text": {
-                                 "example": "Error getting the forecast"}}},
-                       200: {"description": "The forecast chart",
-                             "content": {"image/png": {}}}}
+            return Response(
+                status_code=status.HTTP_200_OK,
+                content=json.dumps({"temperature": temperature}, indent=4),
             )
+        except KeyError:
+            return Response(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content="Error parsing the response",
+            )
+
+
+@router.get(
+    "/{country_name}/forecast/{days}",
+    responses={
+        200: {
+            "description": "The forecast chart for the given country and days.",
+            "content": {
+                "image/png": {
+                    "schema": {"type": "image/png", "format": "binary"},
+                },
+            },
+        },
+        400: {
+            "description": "Bad request. Unsupported number of days,"
+            "or the API key is not set.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "The number of days must be between 1 and 5"},
+                    "example": {"detail": "The API key is not set"},
+                }
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Error parsing the response"},
+                    "example": {"detail": "Error getting the temperature forecast"},
+                }
+            },
+        },
+    },
+)
 async def get_forecast(
-        country_name: str = Path(..., description="The name of the country.",
-                                 example="Belgium"),
-        days: int = Path(...,
-                         description="The number of days to get the "
-                                     "forecast. Must be between 1 "
-                                     "and 5.",
-                         ge=1, le=5)) -> Response:
+    country_name: str = Path(
+        ..., description="The name of the country.", example="Belgium"
+    ),
+    days: int = Path(
+        ...,
+        description="The number of days to get the "
+        "forecast. Must be between 1 "
+        "and 5.",
+        ge=1,
+        le=5,
+    ),
+) -> Response:
     """
     This path will return the temperature of a country.
     :param days: The number of days to get the forecast. Maximum 5 days.
@@ -260,16 +370,20 @@ async def get_forecast(
     url = f"{REST_COUNTRIES_URL}/name/{country_name}"
     # Check if the number of days is supported
     if not 1 <= days <= 5:
-        return Response(status_code=status.HTTP_400_BAD_REQUEST,
-                        content="The number of days must be between 1 and 5")
+        return Response(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content="The number of days must be between 1 and 5",
+        )
 
     async with httpx.AsyncClient() as client:
         try:
             # Get the country information
             response = await client.get(url)
             if response.status_code != status.HTTP_200_OK:
-                return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                content=response.content)
+                return Response(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    content=response.content,
+                )
 
             country = response.json()[0]
 
@@ -282,27 +396,38 @@ async def get_forecast(
 
             # Get the forecast from the OpenWeatherMap API
             if not api_key:
-                return Response(status_code=status.HTTP_400_BAD_REQUEST,
-                                content="The API key is not set")
+                return Response(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content="The API key is not set",
+                )
 
-            url = (f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
-                   f"units=metric&appid={api_key}")
+            url = (
+                f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
+                f"units=metric&appid={api_key}"
+            )
             # Get the forecast
             response = await client.get(url)
 
             if response.status_code == status.HTTP_401_UNAUTHORIZED:
-                return Response(status_code=status.HTTP_400_BAD_REQUEST,
-                                content="The API key is not correct")
+                return Response(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content="The API key is not correct",
+                )
 
             if response.status_code != status.HTTP_200_OK:
-                return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                content=response.content)
+                return Response(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    content="Error getting the temperature forecast",
+                )
 
-            temperature = [forecast["main"]["temp"] for forecast in
-                           response.json()["list"]]
+            temperature = [
+                forecast["main"]["temp"] for forecast in response.json()["list"]
+            ]
         except KeyError:
-            return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content="Error parsing the response")
+            return Response(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content="Error parsing the response",
+            )
 
         # Get the exact country name (for the chart title)
         country_name = country["name"]["common"]
@@ -310,8 +435,9 @@ async def get_forecast(
         return await get_chart(client, days, temperature, country_name)
 
 
-async def get_chart(client: httpx.AsyncClient, days: int, temperature: list[float],
-                    country_name: str) -> Response:
+async def get_chart(
+    client: httpx.AsyncClient, days: int, temperature: list[float], country_name: str
+) -> Response:
     """
     This function will create a chart with the temperature forecast.
 
@@ -324,24 +450,16 @@ async def get_chart(client: httpx.AsyncClient, days: int, temperature: list[floa
     """
 
     chart_options = {
-        'scales': {
-            'xAxes': [{
-                'scaleLabel': {
-                    'display': True,
-                    'labelString': 'Date'
+        "scales": {
+            "xAxes": [{"scaleLabel": {"display": True, "labelString": "Date"}}],
+            "yAxes": [
+                {
+                    "scaleLabel": {"display": True, "labelString": "Temperature"},
+                    "major": {"enabled": True},
                 }
-            }],
-            'yAxes': [{
-                'scaleLabel': {
-                    'display': True,
-                    'labelString': 'Temperature'
-                },
-                "major": {
-                    "enabled": True
-                }
-            }],
+            ],
             "Date": {"type": "category", "position": "bottom"},
-            "Temperature": {"type": "linear", "position": "left"}
+            "Temperature": {"type": "linear", "position": "left"},
         }
     }
 
@@ -356,28 +474,33 @@ async def get_chart(client: httpx.AsyncClient, days: int, temperature: list[floa
         emoji = "🔥"
 
     # Create the chart
-    chart_param = {'type': 'line',
-                   'options': chart_options,
-                   'data': {'labels': translate_hours_to_days(days),
-                            'datasets': [{
-                                'label': f'Temperature in {country_name} {emoji}',
-                                'data': temperature,
-                                'fill': False
-                            }
-                            ]}}
-    params = {
-        "version": "2",
-        "backgroundColor": "transparent",
-        "chart": chart_param
+    chart_param = {
+        "type": "line",
+        "options": chart_options,
+        "data": {
+            "labels": translate_hours_to_days(days),
+            "datasets": [
+                {
+                    "label": f"Temperature in {country_name} {emoji}",
+                    "data": temperature,
+                    "fill": False,
+                }
+            ],
+        },
     }
+    params = {"version": "2", "backgroundColor": "transparent", "chart": chart_param}
     response = await client.post(quickchart_url, json=params)
     if response.status_code != 200:
-        return Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        content="Error creating the chart")
+        return Response(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content="Error creating the chart",
+        )
     else:
-        return Response(status_code=status.HTTP_200_OK,
-                        content=response.content,
-                        media_type="image/png")
+        return Response(
+            status_code=status.HTTP_200_OK,
+            content=response.content,
+            media_type="image/png",
+        )
 
 
 def translate_hours_to_days(days: int) -> list[str]:
