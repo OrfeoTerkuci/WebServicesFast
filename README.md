@@ -14,12 +14,22 @@ You can run the api by running the script `run_api.sh` and you
 can run the script to get the warmest country in South America by running the
 script `run_script.sh`. The script will output the warmest country in South America,
 and save the image of the forecast as `forecast_<country>.png`.  
-Replace `YOUR_API_KEY` with your own api key for openweathermap.
+Replace `YOUR_API_KEY` with your own API key for openweathermap.
+
+The API key I used is `2272c802c8593cfe75843f203090680f`
+
+**The test script cannot be run without having the API running.**
 
 ```bash
-$ ./run_api.sh YOUR_API_KEY
+./run_api.sh YOUR_API_KEY
 ```
 
 ```bash
-$ ./run_script.sh
+./run_script.sh
 ```
+
+## Documentation
+
+API documentation can be found in the `/docs` route of the API.
+The `openapi.json` file containing the OpenAPI documentation can be found in the
+`static` folder.
