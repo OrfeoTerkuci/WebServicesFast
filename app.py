@@ -9,7 +9,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.staticfiles import StaticFiles
-from src import country, favourite
+from src import country, favorite
 
 # Create a parser
 parser = argparse.ArgumentParser(description="Run the FastAPI application.")
@@ -34,7 +34,8 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(country.router)
-app.include_router(favourite.router)
+app.include_router(favorite.router)
+
 
 # Documentation routes
 @app.get("/docs", include_in_schema=False)
