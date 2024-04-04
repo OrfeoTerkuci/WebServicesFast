@@ -1,5 +1,5 @@
 """
-This module contains API paths related to the favourite countries.
+This module contains API paths related to the favorite countries.
 """
 
 import json
@@ -11,11 +11,11 @@ from src.models import CountryName
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
 
-favourite_countries = []
+favorite_countries = []
 
 router = APIRouter(
-    prefix="/favourite",
-    tags=["favourite"],
+    prefix="/favorite",
+    tags=["favorite"],
     responses={
         404: {
             "description": "Not found",
@@ -33,14 +33,14 @@ router = APIRouter(
     "",
     responses={
         200: {
-            "description": "List of favourite countries",
+            "description": "List of favorite countries",
             "content": {
                 "application/json": {
-                    "example": {"favourites": ["Albania"]},
+                    "example": {"favorites": ["Albania"]},
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "favourites": {
+                            "favorites": {
                                 "type": "array",
                                 "items": {"type": "string"},
                             }
@@ -51,15 +51,15 @@ router = APIRouter(
         }
     },
 )
-async def get_favourite_countries() -> Response:
+async def get_favorite_countries() -> Response:
     """
-    This path will return the list of favourite countries.
+    This path will return the list of favorite countries.
 
-    :return: A response with the list of favourite countries.
+    :return: A response with the list of favorite countries.
     """
     return Response(
         status_code=200,
-        content=json.dumps({"favourites": favourite_countries}, indent=4),
+        content=json.dumps({"favorites": favorite_countries}, indent=4),
     )
 
 
@@ -67,10 +67,10 @@ async def get_favourite_countries() -> Response:
     "",
     responses={
         200: {
-            "description": "Country added to the favourite list",
+            "description": "Country added to the favorite list",
             "content": {
                 "application/json": {
-                    "example": {"message": "Albania added to the favourite list"},
+                    "example": {"message": "Albania added to the favorite list"},
                 }
             },
         },
@@ -92,9 +92,9 @@ async def get_favourite_countries() -> Response:
         },
     },
 )
-async def add_favourite(country_name: CountryName) -> Response:
+async def add_favorite(country_name: CountryName) -> Response:
     """
-    This path will add a country to the favourite list.
+    This path will add a country to the favorite list.
 
     :param country_name: The name of the country.
 
@@ -111,13 +111,13 @@ async def add_favourite(country_name: CountryName) -> Response:
             )
         try:
             country = response.json()[0]
-            favourite_countries.append(country["name"]["common"])
+            favorite_countries.append(country["name"]["common"])
             return Response(
                 status_code=status.HTTP_200_OK,
                 content=json.dumps(
                     {
                         "message": f"{country['name']['common']} "
-                        f"added to the favourite list"
+                        f"added to the favorite list"
                     },
                     indent=4,
                 ),
@@ -133,41 +133,41 @@ async def add_favourite(country_name: CountryName) -> Response:
     "",
     responses={
         200: {
-            "description": "Country removed from the favourite list",
+            "description": "Country removed from the favorite list",
             "content": {
                 "application/json": {
-                    "example": {"message": "Albania removed from the favourite list"},
+                    "example": {"message": "Albania removed from the favorite list"},
                 }
             },
         },
         404: {
-            "description": "Country not found in the favourite list",
+            "description": "Country not found in the favorite list",
             "content": {
                 "application/json": {
-                    "example": {"detail": "Country not found in the favourite list"},
+                    "example": {"detail": "Country not found in the favorite list"},
                 }
             },
         },
     },
 )
-async def delete_favourite(country_name: CountryName) -> Response:
+async def delete_favorite(country_name: CountryName) -> Response:
     """
-    This path will remove a country from the favourite list.
+    This path will remove a country from the favorite list.
 
     :param country_name: The name of the country.
 
     :return: A response with the result of the operation.
     """
-    if country_name.name in favourite_countries:
-        favourite_countries.remove(country_name.name)
+    if country_name.name in favorite_countries:
+        favorite_countries.remove(country_name.name)
         return Response(
             status_code=status.HTTP_200_OK,
             content=json.dumps(
-                {"message": f"{country_name.name} " f"removed from the favourite list"},
+                {"message": f"{country_name.name} " f"removed from the favorite list"},
                 indent=4,
             ),
         )
     return Response(
         status_code=status.HTTP_404_NOT_FOUND,
-        content="Country not found in the favourite list",
+        content="Country not found in the favorite list",
     )
