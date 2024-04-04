@@ -65,6 +65,10 @@ def set_api_key(key: str) -> None:
                 "application/json": {
                     "example": {"detail": "Error getting the countries"},
                     "example": {"detail": "Error parsing the response"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -151,7 +155,11 @@ async def get_countries(
             "description": "Internal server error",
             "content": {
                 "application/json": {
-                    "example": {"detail": "Error getting the country information"}
+                    "example": {"detail": "Error getting the country information"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -225,14 +233,24 @@ async def get_country(
         400: {
             "description": "Bad request. The API key is not set.",
             "content": {
-                "application/json": {"example": {"detail": "The API key is not set"}}
+                "application/json": {
+                    "example": {"detail": "The API key is not set"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
+                },
             },
         },
         401: {
             "description": "Unauthorized",
             "content": {
                 "application/json": {
-                    "example": {"detail": "The API key is not correct"}
+                    "example": {"detail": "The API key is not correct"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -240,9 +258,13 @@ async def get_country(
             "description": "Internal server error",
             "content": {
                 "application/json": {
-                    "example": {"detail": "EError getting the temperature forecast"},
+                    "example": {"detail": "Error getting the temperature forecast"},
                     "example": {"detail": "Error parsing the response"},
                     "example": {"detail": "Error getting the country information"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -333,6 +355,10 @@ async def get_temperature(
                 "application/json": {
                     "example": {"detail": "The number of days must be between 1 and 5"},
                     "example": {"detail": "The API key is not set"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -342,6 +368,10 @@ async def get_temperature(
                 "application/json": {
                     "example": {"detail": "Error parsing the response"},
                     "example": {"detail": "Error getting the temperature forecast"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -382,7 +412,7 @@ async def get_forecast(
             if response.status_code != status.HTTP_200_OK:
                 return Response(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    content=response.content,
+                    content="Error getting the country information"
                 )
 
             country = response.json()[0]

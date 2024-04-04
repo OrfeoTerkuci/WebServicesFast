@@ -5,7 +5,7 @@ This module contains API paths related to the favorite countries.
 import json
 
 import httpx
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Body, Path, Response, status
 
 from src.models import CountryName
 
@@ -71,6 +71,12 @@ async def get_favorite_countries() -> Response:
             "content": {
                 "application/json": {
                     "example": {"message": "Albania added to the favorite list"},
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "message": {"type": "string"},
+                        },
+                    },
                 }
             },
         },
@@ -79,6 +85,10 @@ async def get_favorite_countries() -> Response:
             "content": {
                 "application/json": {
                     "example": {"detail": "Country not found"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
@@ -87,12 +97,20 @@ async def get_favorite_countries() -> Response:
             "content": {
                 "application/json": {
                     "example": {"detail": "Error parsing the response"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
     },
 )
-async def add_favorite(country_name: CountryName) -> Response:
+async def add_favorite(
+    country_name: CountryName = Body(
+        ..., description="The name of the country", example={"name": "Albania"}
+    )
+) -> Response:
     """
     This path will add a country to the favorite list.
 
@@ -101,7 +119,7 @@ async def add_favorite(country_name: CountryName) -> Response:
     :return: A response with the result of the operation.
     """
     # Get the country
-    url = f"{REST_COUNTRIES_URL}/name/{country_name.name}"
+    url = f"{REST_COUNTRIES_URL}/name/{country_name.name.lower()}"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
@@ -116,8 +134,7 @@ async def add_favorite(country_name: CountryName) -> Response:
                 status_code=status.HTTP_200_OK,
                 content=json.dumps(
                     {
-                        "message": f"{country['name']['common']} "
-                        f"added to the favorite list"
+                        "message": f"{country['name']['common']} added to the favorite list"
                     },
                     indent=4,
                 ),
@@ -137,6 +154,12 @@ async def add_favorite(country_name: CountryName) -> Response:
             "content": {
                 "application/json": {
                     "example": {"message": "Albania removed from the favorite list"},
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "message": {"type": "string"},
+                        },
+                    },
                 }
             },
         },
@@ -145,12 +168,20 @@ async def add_favorite(country_name: CountryName) -> Response:
             "content": {
                 "application/json": {
                     "example": {"detail": "Country not found in the favorite list"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
                 }
             },
         },
     },
 )
-async def delete_favorite(country_name: CountryName) -> Response:
+async def delete_favorite(
+    country_name: CountryName = Body(
+        ..., description="The name of the country", example={"name": "Albania"}
+    )
+) -> Response:
     """
     This path will remove a country from the favorite list.
 
@@ -163,7 +194,7 @@ async def delete_favorite(country_name: CountryName) -> Response:
         return Response(
             status_code=status.HTTP_200_OK,
             content=json.dumps(
-                {"message": f"{country_name.name} " f"removed from the favorite list"},
+                {"message": f"{country_name.name} removed from the favorite list"},
                 indent=4,
             ),
         )
