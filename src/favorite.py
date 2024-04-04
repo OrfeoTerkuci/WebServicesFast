@@ -5,7 +5,7 @@ This module contains API paths related to the favorite countries.
 import json
 
 import httpx
-from fastapi import APIRouter, Body, Path, Response, status
+from fastapi import APIRouter, Body, Response, status
 
 from src.models import CountryName
 
