@@ -92,6 +92,18 @@ async def get_favorite_countries() -> Response:
                 }
             },
         },
+        409: {
+            "description": "Country already in the favorite list",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Country already in the favorite list"},
+                    "schema": {
+                        "type": "string",
+                        "description": "The error message.",
+                    },
+                }
+            },
+        },
         500: {
             "description": "Error parsing the response",
             "content": {
@@ -119,7 +131,7 @@ async def add_favorite(
     :return: A response with the result of the operation.
     """
     # Get the country
-    url = f"{REST_COUNTRIES_URL}/name/{country_name.name.lower()}"
+    url = f"{REST_COUNTRIES_URL}/name/{country_name.name}?fullText=true"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
@@ -129,12 +141,22 @@ async def add_favorite(
             )
         try:
             country = response.json()[0]
-            favorite_countries.append(country["name"]["common"])
+            if country["name"]["common"] not in favorite_countries:
+                favorite_countries.append(country["name"]["common"])
+                return Response(
+                    status_code=status.HTTP_200_OK,
+                    content=json.dumps(
+                        {
+                            "message": f"{country['name']['common']} added to the favorite list"
+                        },
+                        indent=4,
+                    ),
+                )
             return Response(
-                status_code=status.HTTP_200_OK,
+                status_code=status.HTTP_409_CONFLICT,
                 content=json.dumps(
                     {
-                        "message": f"{country['name']['common']} added to the favorite list"
+                        "message": f"{country['name']['common']} is already in the favorite list"
                     },
                     indent=4,
                 ),

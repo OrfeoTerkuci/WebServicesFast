@@ -85,6 +85,10 @@ async def run_warmest_country(client: httpx.AsyncClient):
         f.write(response.content)
     print(
         f"The forecast image has been saved as forecast_{warmest_country["name"]}.png")
+    
+    print("Clearing favorites (for the next test)...")
+    response = await client.request("DELETE", f"{base_url}/favorite",
+                                    json={"name": warmest_country["name"]})
 
 
 async def run_all_countries(client: httpx.AsyncClient) -> list[str]:

@@ -85,9 +85,9 @@ async def get_countries(
     :return: A list with the countries.
     """
     if continent:
-        url = f"{REST_COUNTRIES_URL}/region/{continent}"
+        url = f"{REST_COUNTRIES_URL}/region/{continent}?fields=name"
     else:
-        url = f"{REST_COUNTRIES_URL}/all"
+        url = f"{REST_COUNTRIES_URL}/all?fields=name"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
@@ -179,7 +179,7 @@ async def get_country(
     :param country_name: The name of the country.
     :return:
     """
-    url = f"{REST_COUNTRIES_URL}/name/{country_name}"
+    url = f"{REST_COUNTRIES_URL}/name/{country_name}?fullText=true&fields=capital,population,area,capitalInfo"
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
@@ -282,7 +282,7 @@ async def get_temperature(
     :return:
     """
     # Get the country information (latitude and longitude of the capital)
-    url = f"{REST_COUNTRIES_URL}/name/{country_name}"
+    url = f"{REST_COUNTRIES_URL}/name/{country_name}?fullText=true&fields=capitalInfo"
 
     async with httpx.AsyncClient() as client:
         try:
@@ -397,7 +397,7 @@ async def get_forecast(
     :return: The temperature forecast chart for the given country.
     """
     # Get the country information (latitude and longitude of the capital)
-    url = f"{REST_COUNTRIES_URL}/name/{country_name}"
+    url = f"{REST_COUNTRIES_URL}/name/{country_name}?fullText=true&fields=capitalInfo"
     # Check if the number of days is supported
     if not 1 <= days <= 5:
         return Response(
@@ -412,7 +412,7 @@ async def get_forecast(
             if response.status_code != status.HTTP_200_OK:
                 return Response(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    content="Error getting the country information"
+                    content="Error getting the country information",
                 )
 
             country = response.json()[0]
@@ -458,9 +458,6 @@ async def get_forecast(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content="Error parsing the response",
             )
-
-        # Get the exact country name (for the chart title)
-        country_name = country["name"]["common"]
 
         return await get_chart(client, days, temperature, country_name)
 
