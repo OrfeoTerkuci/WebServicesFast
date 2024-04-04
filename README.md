@@ -21,7 +21,7 @@ The API key I used is `2272c802c8593cfe75843f203090680f`
 **The test script cannot be run without having the API running.**
 
 ```bash
-./run_api.sh YOUR_API_KEY
+./run_api.sh 2272c802c8593cfe75843f203090680f
 ```
 
 ```bash
