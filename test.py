@@ -11,6 +11,7 @@ base_url = "http://localhost:8000/api"
 
 
 async def run_warmest_country(client: httpx.AsyncClient):
+    print("\nGetting the warmest country in South America...")
     response = await client.get(f"{base_url}/country?continent=south%20america")
     if response.status_code != 200:
         return response.content
@@ -87,7 +88,7 @@ async def run_warmest_country(client: httpx.AsyncClient):
 
 
 async def run_all_countries(client: httpx.AsyncClient) -> list[str]:
-    print("Getting all countries...\n")
+    print("\nGetting all countries...")
     response = await client.get(f"{base_url}/country")
     if response.status_code != 200:
         return []
@@ -97,16 +98,18 @@ async def run_all_countries(client: httpx.AsyncClient) -> list[str]:
 
 
 async def run_country(client: httpx.AsyncClient, country: str):
-    print(f"Getting information for {country}...\n")
+    print(f"\nGetting information for {country}...")
     response = await client.get(f"{base_url}/country/{country}")
     if response.status_code != 200:
         return response.content
-    print(response.json())
+    print(f"Information for {country}:")
+    for key, value in response.json().items():
+        print(f"{key}: {value}")
     return response.json()
 
 
 async def run_country_temperature(client: httpx.AsyncClient, country: str):
-    print(f"Getting temperature for {country}...\n")
+    print(f"\nGetting temperature for {country}...")
     response = await client.get(f"{base_url}/country/{country}/temperature")
     if response.status_code != 200:
         return response.content
@@ -116,7 +119,7 @@ async def run_country_temperature(client: httpx.AsyncClient, country: str):
 
 
 async def run_country_forecast(client: httpx.AsyncClient, country: str, days: int):
-    print(f"Getting forecast for {country} for the next {days} days...\n")
+    print(f"\nGetting forecast for {country} for the next {days} days...")
     response = await client.get(f"{base_url}/country/{country}/forecast/{days}")
     if response.status_code != 200:
         return response.content
@@ -128,7 +131,7 @@ async def run_country_forecast(client: httpx.AsyncClient, country: str, days: in
 
 
 async def run_favorites(client: httpx.AsyncClient):
-    print("Getting favorites...\n")
+    print("\nGetting favorites...")
     response = await client.get(f"{base_url}/favorite")
     if response.status_code != 200:
         return response.content
@@ -141,7 +144,7 @@ async def run_favorites(client: httpx.AsyncClient):
 
 
 async def run_add_favorite(client: httpx.AsyncClient, country: str):
-    print(f"Adding {country} to favorites...\n")
+    print(f"\nAdding {country} to favorites...")
     response = await client.post(f"{base_url}/favorite",
                                  json={"name": country})
     if response.status_code != 200:
@@ -151,7 +154,7 @@ async def run_add_favorite(client: httpx.AsyncClient, country: str):
 
 
 async def run_remove_favorite(client: httpx.AsyncClient, country: str):
-    print(f"Removing {country} from favorites...\n")
+    print(f"\nRemoving {country} from favorites...")
     response = await client.request("DELETE", f"{base_url}/favorite",
                                     json={"name": country})
     if response.status_code != 200:
