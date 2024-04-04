@@ -14,6 +14,10 @@ cleanup() {
 
   echo "Deactivating the virtual environment"
   deactivate
+
+  echo "Cleaning up the virtual environment"
+  rm -rf venv
+
   echo "Exiting the script"
 }
 
