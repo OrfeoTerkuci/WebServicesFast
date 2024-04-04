@@ -2,7 +2,7 @@
     "openapi": "3.1.0",
     "info": {
         "title": "Countries API",
-        "description": "This is a simple API that returns a list of countries.",
+        "description": "This is a simple API that returns information about countries",
         "version": "1.0"
     },
     "servers": [
@@ -75,6 +75,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "Error parsing the response"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -170,6 +174,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "Error getting the country information"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -245,6 +253,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "The API key is not set"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -255,6 +267,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "The API key is not correct"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -265,6 +281,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "Error getting the country information"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -348,6 +368,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "The API key is not set"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -358,6 +382,10 @@
                             "application/json": {
                                 "example": {
                                     "detail": "Error getting the temperature forecast"
+                                },
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
                                 }
                             }
                         }
@@ -375,22 +403,22 @@
                 }
             }
         },
-        "/favourite": {
+        "/favorite": {
             "get": {
                 "tags": [
-                    "favourite"
+                    "favorite"
                 ],
-                "summary": "Get Favourite Countries",
-                "description": "This path will return the list of favourite countries.\n\n:return: A response with the list of favourite countries.",
-                "operationId": "get_favourite_countries_favourite_get",
+                "summary": "Get Favorite Countries",
+                "description": "This path will return the list of favorite countries.\n\n:return: A response with the list of favorite countries.",
+                "operationId": "get_favorite_countries_favorite_get",
                 "responses": {
                     "200": {
-                        "description": "List of favourite countries",
+                        "description": "List of favorite countries",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "favourites": {
+                                        "favorites": {
                                             "items": {
                                                 "type": "string"
                                             },
@@ -400,7 +428,7 @@
                                     "type": "object"
                                 },
                                 "example": {
-                                    "favourites": [
+                                    "favorites": [
                                         "Albania"
                                     ]
                                 }
@@ -421,16 +449,25 @@
             },
             "post": {
                 "tags": [
-                    "favourite"
+                    "favorite"
                 ],
-                "summary": "Add Favourite",
-                "description": "This path will add a country to the favourite list.\n\n:param country_name: The name of the country.\n\n:return: A response with the result of the operation.",
-                "operationId": "add_favourite_favourite_post",
+                "summary": "Add Favorite",
+                "description": "This path will add a country to the favorite list.\n\n:param country_name: The name of the country.\n\n:return: A response with the result of the operation.",
+                "operationId": "add_favorite_favorite_post",
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CountryName"
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/CountryName"
+                                    }
+                                ],
+                                "title": "Country Name",
+                                "description": "The name of the country"
+                            },
+                            "example": {
+                                "name": "Albania"
                             }
                         }
                     },
@@ -438,12 +475,19 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Country added to the favourite list",
+                        "description": "Country added to the favorite list",
                         "content": {
                             "application/json": {
-                                "schema": {},
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
                                 "example": {
-                                    "message": "Albania added to the favourite list"
+                                    "message": "Albania added to the favorite list"
                                 }
                             }
                         }
@@ -452,6 +496,10 @@
                         "description": "Country not found",
                         "content": {
                             "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
+                                },
                                 "example": {
                                     "detail": "Country not found"
                                 }
@@ -462,6 +510,10 @@
                         "description": "Error parsing the response",
                         "content": {
                             "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
+                                },
                                 "example": {
                                     "detail": "Error parsing the response"
                                 }
@@ -482,16 +534,25 @@
             },
             "delete": {
                 "tags": [
-                    "favourite"
+                    "favorite"
                 ],
-                "summary": "Delete Favourite",
-                "description": "This path will remove a country from the favourite list.\n\n:param country_name: The name of the country.\n\n:return: A response with the result of the operation.",
-                "operationId": "delete_favourite_favourite_delete",
+                "summary": "Delete Favorite",
+                "description": "This path will remove a country from the favorite list.\n\n:param country_name: The name of the country.\n\n:return: A response with the result of the operation.",
+                "operationId": "delete_favorite_favorite_delete",
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CountryName"
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/CountryName"
+                                    }
+                                ],
+                                "title": "Country Name",
+                                "description": "The name of the country"
+                            },
+                            "example": {
+                                "name": "Albania"
                             }
                         }
                     },
@@ -499,22 +560,33 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Country removed from the favourite list",
+                        "description": "Country removed from the favorite list",
                         "content": {
                             "application/json": {
-                                "schema": {},
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
                                 "example": {
-                                    "message": "Albania removed from the favourite list"
+                                    "message": "Albania removed from the favorite list"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Country not found in the favourite list",
+                        "description": "Country not found in the favorite list",
                         "content": {
                             "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "description": "The error message."
+                                },
                                 "example": {
-                                    "detail": "Country not found in the favourite list"
+                                    "detail": "Country not found in the favorite list"
                                 }
                             }
                         }
