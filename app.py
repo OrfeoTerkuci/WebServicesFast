@@ -25,7 +25,7 @@ country.set_api_key(args.api_key)
 app = FastAPI(
     root_path="/api",
     title="Countries API",
-    description="This is a simple API that returns a list of countries.",
+    description="This is a simple API that returns information about countries",
     version="1.0",
     docs_url=None,
     redoc_url=None,
