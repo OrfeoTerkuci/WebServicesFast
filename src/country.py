@@ -20,7 +20,7 @@ router = APIRouter(
 )
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
-openweathermap_url = "https://api.openweathermap.org/data/2.5/forecast"
+openweathermap_url = "https://api.openweathermap.org/data/2.5"
 quickchart_url = "https://quickchart.io/chart"
 api_key = ""
 
@@ -307,8 +307,8 @@ async def get_temperature(
                 )
 
             url = (
-                f"{openweathermap_url}?lat={latitude}&lon={longitude}&units=metric"
-                f"&cnt=1&appid={api_key}"
+                f"{openweathermap_url}/weather?lat={latitude}&lon={longitude}"
+                f"&units=metric&appid={api_key}"
             )
             # Get the forecast
             response = await client.get(url)
@@ -325,7 +325,7 @@ async def get_temperature(
                 )
 
             # Get the temperature
-            temperature = response.json()["list"][0]["main"]["temp"]
+            temperature = response.json()["main"]["temp"]
             return Response(
                 status_code=status.HTTP_200_OK,
                 content=json.dumps({"temperature": temperature}, indent=4),
@@ -432,7 +432,7 @@ async def get_forecast(
                 )
 
             url = (
-                f"{openweathermap_url}?lat={latitude}&lon={longitude}&cnt={hours}&"
+                f"{openweathermap_url}/forecast?lat={latitude}&lon={longitude}&cnt={hours}&"
                 f"units=metric&appid={api_key}"
             )
             # Get the forecast
