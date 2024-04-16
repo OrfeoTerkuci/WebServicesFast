@@ -20,9 +20,9 @@ router = APIRouter(
 )
 
 REST_COUNTRIES_URL = "https://restcountries.com/v3.1"
-openweathermap_url = "https://api.openweathermap.org/data/2.5"
-quickchart_url = "https://quickchart.io/chart"
-api_key = ""
+OPENWEATHERMAP_URL = "https://api.openweathermap.org/data/2.5"
+QUICKCHART_URL = "https://quickchart.io/chart"
+API_KEY = ""
 
 
 def set_api_key(key: str) -> None:
@@ -30,8 +30,8 @@ def set_api_key(key: str) -> None:
     Set the API key for the OpenWeatherMap API.
     :param key: The API key.
     """
-    global api_key
-    api_key = key
+    global API_KEY
+    API_KEY = key
 
 
 @router.get(
@@ -300,15 +300,15 @@ async def get_temperature(
             longitude = country["capitalInfo"]["latlng"][1]
 
             # Get the forecast from the OpenWeatherMap API
-            if not api_key:
+            if not API_KEY:
                 return Response(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     content="The API key is not set",
                 )
 
             url = (
-                f"{openweathermap_url}/weather?lat={latitude}&lon={longitude}"
-                f"&units=metric&appid={api_key}"
+                f"{OPENWEATHERMAP_URL}/weather?lat={latitude}&lon={longitude}"
+                f"&units=metric&appid={API_KEY}"
             )
             # Get the forecast
             response = await client.get(url)
@@ -425,15 +425,15 @@ async def get_forecast(
             hours = days * 8 if days <= 5 else 0
 
             # Get the forecast from the OpenWeatherMap API
-            if not api_key:
+            if not API_KEY:
                 return Response(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     content="The API key is not set",
                 )
 
             url = (
-                f"{openweathermap_url}/forecast?lat={latitude}&lon={longitude}&cnt={hours}&"
-                f"units=metric&appid={api_key}"
+                f"{OPENWEATHERMAP_URL}/forecast?lat={latitude}&lon={longitude}&cnt={hours}&"
+                f"units=metric&appid={API_KEY}"
             )
             # Get the forecast
             response = await client.get(url)
@@ -516,7 +516,7 @@ async def get_chart(
         },
     }
     params = {"version": "2", "backgroundColor": "transparent", "chart": chart_param}
-    response = await client.post(quickchart_url, json=params)
+    response = await client.post(QUICKCHART_URL, json=params)
     if response.status_code != 200:
         return Response(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
