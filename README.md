@@ -20,6 +20,8 @@ The API key I used is `2272c802c8593cfe75843f203090680f`
 
 **The test script cannot be run without having the API running.**
 
+Recommended to run in WSL or Linux.
+
 ```bash
 ./run_api.sh 2272c802c8593cfe75843f203090680f
 ```
