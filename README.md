@@ -16,14 +16,12 @@ script `run_script.sh`. The script will output the warmest country in South Amer
 and save the image of the forecast as `forecast_<country>.png`.  
 Replace `YOUR_API_KEY` with your own API key for openweathermap.
 
-The API key I used is `2272c802c8593cfe75843f203090680f`
-
 **The test script cannot be run without having the API running.**
 
 Recommended to run in WSL or Linux.
 
 ```bash
-./run_api.sh 2272c802c8593cfe75843f203090680f
+./run_api.sh <YOUR API KEY>
 ```
 
 ```bash
